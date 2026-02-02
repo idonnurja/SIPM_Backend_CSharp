@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SIPM ARKIMEDO-21 | Frontend</title>
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- Ikona (opsionale) -->
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+
+  <!-- Splash Screen -->
+  <div id="splash-screen" class="splash">
+    <div class="splash-card">
+      <div class="logo">
+        <i class="fa-solid fa-hospital"></i>
+      </div>
+      <h1>SIPM ARKIMEDO-21</h1>
+      <p>Sistemi i Menaxhimit të Pajisjeve Mjekësore</p>
+      <div class="loader"></div>
+      <small>Po ngarkohet…</small>
+    </div>
+  </div>
+
+  <!-- Login -->
+  <div id="login-form-container" class="auth" style="display:none;">
+    <div class="auth-card">
+      <h2>Kyçu</h2>
+      <p class="muted">Zgjidh rolin dhe hyr në dashboard.</p>
+
+      <form id="login-form" class="form">
+        <div class="field">
+          <label for="role">Roli</label>
+          <select id="role" required>
+            <option value="" disabled selected>Zgjidh rolin…</option>
+            <option value="teknik">Teknik</option>
+            <option value="inxhinier">Inxhinier</option>
+            <option value="administrator">Administrator</option>
+          </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+          <i class="fa-solid fa-right-to-bracket"></i> Hyr
+        </button>
+
+        <div class="hint">
+          Backend: <code>http://localhost:5000</code> • Frontend: <code>http://localhost:5500</code>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Dashboard -->
+  <div id="dashboard" class="dashboard" style="display:none;">
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="brand">
+          <i class="fa-solid fa-gear"></i>
+          <div>
+            <div class="brand-title">SIPM ARKIMEDO-21</div>
+            <div class="brand-subtitle">Roli: <span id="current-user-role" class="pill">—</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="topbar-right">
+        <button class="btn" onclick="testAPI()">
+          <i class="fa-solid fa-vial"></i> Test API
+        </button>
+        <button class="btn btn-danger" onclick="logout()">
+          <i class="fa-solid fa-arrow-right-from-bracket"></i> Dil
+        </button>
+      </div>
+    </header>
+
+    <main class="container">
+
+      <!-- TEKNIK -->
+      <section id="teknik-app" class="card" style="display:none;">
+        <div class="card-head">
+          <h2><i class="fa-solid fa-screwdriver-wrench"></i> Paneli i Teknikut</h2>
+          <span class="muted">Krijo Akt Konstatimi për një pajisje</span>
+        </div>
+
+        <div class="grid">
+          <div class="panel">
+            <h3>Krijo Akt Konstatimi</h3>
+
+            <div class="form">
+              <div class="row">
+                <div class="field">
+                  <label for="username">Emri (Teknik)</label>
+                  <input id="username" type="text" placeholder="p.sh. Arben" />
+                </div>
+
+                <div class="field">
+                  <label for="device_id">Device ID</label>
+                  <input id="device_id" type="text" list="device_id_list" placeholder="Zgjidh ose shkruaj Device ID" autocomplete="off" />
+                  <datalist id="device_id_list"></datalist>
+                  <small class="hint" id="device-preview">Zgjidh një pajisje nga lista (ngarkohet automatikisht).</small>
+                </div>
+              </div>
+
+              <div class="field">
+                <label for="constatation_notes">Përshkrimi i dëmtimit</label>
+                <textarea id="constatation_notes" rows="4" placeholder="Shkruaj çfarë problemi ka pajisja..."></textarea>
+              </div>
+
+              <button class="btn btn-primary" onclick="submitConstatation()">
+                <i class="fa-solid fa-file-circle-plus"></i> Dërgo Aktin
+              </button>
+
+              <p class="tip">
+                <i class="fa-solid fa-circle-info"></i>
+                Shënim: Sistemi do të gjejë pajisjen me <b>Device ID</b> dhe do krijojë aktin me urgjencë <b>Mesatar</b>.
+              </p>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h3>Udhëzim i shpejtë</h3>
+            <ol class="list">
+              <li>Shkruaj emrin tënd te <b>Emri (Teknik)</b></li>
+              <li>Vendos <b>Device ID</b> të pajisjes</li>
+              <li>Shkruaj përshkrimin e dëmtimit</li>
+              <li>Kliko <b>Dërgo Aktin</b></li>
+            </ol>
+            <div class="status-box">
+              <div class="status-dot"></div>
+              <div>
+                <div class="status-title">Status</div>
+                <div class="status-subtitle">Akte të hapura ngarkohen automatikisht për inxhinierin/adminin.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- INXHINIER -->
+      <section id="inxhinier-app" class="card" style="display:none;">
+        <div class="card-head">
+          <h2><i class="fa-solid fa-helmet-safety"></i> Paneli i Inxhinierit</h2>
+          <span class="muted">Detyrat aktive (Aktet e hapura)</span>
+        </div>
+
+        <div id="inxhinier-notifications" class="notifications">
+          <!-- Mbushen nga JS -->
+          <div class="muted">Duke ngarkuar…</div>
+        </div>
+      </section>
+
+      <!-- ADMIN -->
+      <section id="admin-app" class="card" style="display:none;">
+        <div class="card-head">
+          <h2><i class="fa-solid fa-chart-column"></i> Paneli i Administratorit</h2>
+          <span class="muted">Statistika të pajisjeve</span>
+        </div>
+
+        <div class="stats">
+          <div class="stat">
+            <div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div>
+            <div class="stat-label">Pajisje aktive</div>
+            <div class="stat-value" id="devices-active">—</div>
+          </div>
+
+          <div class="stat">
+            <div class="stat-icon warn"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <div class="stat-label">Pajisje jo funksionale</div>
+            <div class="stat-value" id="devices-malfunction">—</div>
+          </div>
+
+          <div class="stat">
+            <div class="stat-icon info"><i class="fa-solid fa-bolt"></i></div>
+            <div class="stat-label">Shënim</div>
+            <div class="stat-value small">Dashboard përditësohet automatikisht.</div>
+          </div>
+        </div>
+
+        <div class="admin-note">
+          <i class="fa-solid fa-circle-info"></i>
+          Nëse numrat janë “—”, kontrollo që endpoint-i <code>/api/pajisje/stats</code> ekziston dhe backend është ON.
+        </div>
+      </section>
+
+    </main>
+
+    <footer class="footer">
+      <span>© SIPM ARKIMEDO-21</span>
+      <span class="muted">Frontend test me HTML/CSS • Integruar me API</span>
+    </footer>
+  </div>
+
+  <!-- Script yt (mos e prek) -->
+  <script src="script_updated.js"></script>
+
+  <!-- UI Helpers -->
+  <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+  <div id="loading" class="loading hidden" aria-hidden="true">
+    <div class="loading-card">
+      <div class="spinner"></div>
+      <div>Duke komunikuar me serverin…</div>
+    </div>
+  </div>
+
+  <!-- Modal: Mbyll Aktin -->
+  <div id="modal-repair" class="modal hidden" aria-hidden="true">
+    <div class="modal-backdrop" onclick="closeRepairModal()"></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modal-repair-title">
+      <div class="modal-head">
+        <h3 id="modal-repair-title"><i class="fa-solid fa-circle-check"></i> Mbyll Akt Konstatimi</h3>
+        <button class="icon-btn" onclick="closeRepairModal()" aria-label="Mbyll">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="field">
+          <label for="repair_inxhinier">Emri (Inxhinier)</label>
+          <input id="repair_inxhinier" type="text" placeholder="p.sh. Ervin" />
+        </div>
+        <div class="field">
+          <label for="repair_note">Shënim për riparimin (opsionale)</label>
+          <textarea id="repair_note" rows="3" placeholder="p.sh. Ndërrim kabllo, testim OK"></textarea>
+        </div>
+
+        <div class="modal-actions">
+          <button class="btn" onclick="closeRepairModal()">Anulo</button>
+          <button class="btn btn-success" id="repair_submit_btn" onclick="submitRepairModal()">
+            <i class="fa-solid fa-check"></i> Mbyll
+          </button>
+        </div>
+        <p class="muted small">Shënim: akti duhet të jetë “HAPUR” që të mbyllet.</p>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
